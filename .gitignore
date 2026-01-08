@@ -1,0 +1,15 @@
+*
+!resources/
+!build/
+!include/
+!program/
+!src/
+!resources/*
+!build/*
+!program/*.c
+!include/*.h
+!src/*.c
+!.gitignore
+!makefile
+!*.md
+!*.pdf
