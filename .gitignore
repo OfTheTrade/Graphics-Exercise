@@ -4,6 +4,7 @@
 !include/
 !program/
 !src/
+
 !resources/*
 !resources/planet/*
 !resources/texture/*
