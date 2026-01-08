@@ -3,7 +3,7 @@
 !build/
 !include/
 !program/
-!src/
+!source/
 
 !resources/*
 !resources/planet/*
@@ -11,7 +11,7 @@
 !build/*
 !program/*.c
 !include/*.h
-!src/*.c
+!source/*.c
 !.gitignore
 !makefile
 !*.md
