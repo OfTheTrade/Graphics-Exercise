@@ -115,6 +115,7 @@ int loadObj(const char* path,LoadedObject* returnObject){
         returnObject->normals[i*3 + 1] = temp_normals[normal_index*3 + 1];
         returnObject->normals[i*3 + 2] = temp_normals[normal_index*3 + 2];
     }
+    
     // Free temporary arrays
     free(temp_vertices);
     free(temp_uvs);
