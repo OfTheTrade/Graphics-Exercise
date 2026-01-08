@@ -5,6 +5,8 @@
 !program/
 !src/
 !resources/*
+!resources/planet/*
+!resources/texture/*
 !build/*
 !program/*.c
 !include/*.h
