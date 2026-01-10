@@ -4,6 +4,8 @@
 !include/
 !program/
 !source/
+!shaders/
+!glad/
 
 !resources/*
 !resources/planet/*
@@ -12,6 +14,9 @@
 !program/*.c
 !include/*.h
 !source/*.c
+shaders/*.glsl
+!glad/*.h
+!glad/*.c
 !.gitignore
 !makefile
 !*.md
