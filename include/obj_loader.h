@@ -1,7 +1,7 @@
 #ifndef OBJ_LOADER_H
 #define OBJ_LOADER_H
 
-#include <glad/glad.h>
+#include "../glad/glad.h"
 
 // Holds loaded object data
 typedef struct{
@@ -12,10 +12,10 @@ typedef struct{
 } LoadedObject;
 
 // Loads an OBJ file from the given path into the provided LoadedObject structure
-// 1 on success, 0 on failure
+// 0 on failure, 1 on success
 int loadObj(const char* path, LoadedObject* returnObject);
 
-// Frees loaded object data
+// Frees the final arrays in the LoadedObject
 void freeObj(LoadedObject* obj);
 
 #endif

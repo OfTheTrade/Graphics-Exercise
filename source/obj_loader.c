@@ -11,13 +11,15 @@ void capacityCheck(float** array, int* capacity,int count){
     }
 }
 
+// Loads an OBJ file from the given path into the provided LoadedObject structure
+// 0 on failure, 1 on success
 int loadObj(const char* path,LoadedObject* returnObject){
     printf("Loading OBJ file: (%s)\n", path);
     // Open the file
     FILE* file = fopen(path, "r");
     if (file == NULL) {
         printf("Failed to open file: (%s)\n", path);
-        return 1;
+        return 0;
     }
 
     // Starting maximum size (will realloc if needed)
@@ -36,59 +38,51 @@ int loadObj(const char* path,LoadedObject* returnObject){
 
     char line_buffer[128];
     // Read the file line by line
-    while(fscanf(file, "%s", line_buffer) != EOF){
+    char line[256];
+while (fgets(line, sizeof(line), file)) {
+    // Skip comments or empty lines
+    if (line[0] == '#' || line[0] == '\n' || line[0] == '\r') continue;
 
-        if (strcmp(line_buffer, "v") == 0){
-            // Vertex line
-            capacityCheck(&temp_vertices, &max_vertices, vertex_count + 3);
-            fscanf(file, "%f %f %f\n", &temp_vertices[vertex_count], &temp_vertices[vertex_count+1], &temp_vertices[vertex_count+2]);
-            vertex_count += 3;
-        }else if (strcmp(line_buffer, "vt") == 0) {
-            // UV line 
-            capacityCheck(&temp_uvs, &max_uvs, uv_count + 2);
-            fscanf(file, "%f %f\n", &temp_uvs[uv_count], &temp_uvs[uv_count+1]);
-            uv_count += 2;
-        }else if (strcmp(line_buffer, "vn") == 0) {
-            // Normal line
-            capacityCheck(&temp_normals, &max_normals, normal_count + 3);
-            fscanf(file, "%f %f %f\n", &temp_normals[normal_count], &temp_normals[normal_count+1], &temp_normals[normal_count+2]);
-            normal_count += 3;
-        }else if (strcmp(line_buffer, "f") == 0 ){
-            // Face line
-            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-            int face_buffer = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", 
-                                 &vertexIndex[0], &uvIndex[0], &normalIndex[0],
-                                 &vertexIndex[1], &uvIndex[1], &normalIndex[1],
-                                 &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
-            
-            // Store the indices (resizing if necessary)
-           if (index_count + 3 >= max_indices) {
-                max_indices *= 2;
-                vertex_indices = (unsigned int*)realloc(vertex_indices, max_indices * sizeof(unsigned int));
-                uv_indices     = (unsigned int*)realloc(uv_indices,     max_indices * sizeof(unsigned int));
-                normal_indices = (unsigned int*)realloc(normal_indices, max_indices * sizeof(unsigned int));
-            }
+    char prefix[10];
+    sscanf(line, "%s", prefix);
 
-            // First face 
-            vertex_indices[index_count] = vertexIndex[0];
-            uv_indices[index_count]     = uvIndex[0];
-            normal_indices[index_count] = normalIndex[0];
-            index_count++;
+    if (strcmp(prefix, "v") == 0) {
+        capacityCheck(&temp_vertices, &max_vertices, vertex_count + 3);
+        sscanf(line, "v %f %f %f", &temp_vertices[vertex_count], 
+                                   &temp_vertices[vertex_count+1], 
+                                   &temp_vertices[vertex_count+2]);
+        vertex_count += 3;
+    } 
+    else if (strcmp(prefix, "vt") == 0) {
+        capacityCheck(&temp_uvs, &max_uvs, uv_count + 2);
+        sscanf(line, "vt %f %f", &temp_uvs[uv_count], 
+                                 &temp_uvs[uv_count+1]);
+        uv_count += 2;
+    } 
+    else if (strcmp(prefix, "vn") == 0) {
+        capacityCheck(&temp_normals, &max_normals, normal_count + 3);
+        sscanf(line, "vn %f %f %f", &temp_normals[normal_count], 
+                                    &temp_normals[normal_count+1], 
+                                    &temp_normals[normal_count+2]);
+        normal_count += 3;
+    } 
+    else if (strcmp(prefix, "f") == 0) {
+        unsigned int v[3], t[3], n[3];
+        // Blender often exports f v/t/n v/t/n v/t/n
+        int matches = sscanf(line, "f %u/%u/%u %u/%u/%u %u/%u/%u", 
+                             &v[0], &t[0], &n[0], 
+                             &v[1], &t[1], &n[1], 
+                             &v[2], &t[2], &n[2]);
 
-            // Second face
-            vertex_indices[index_count] = vertexIndex[1];
-            uv_indices[index_count]     = uvIndex[1];
-            normal_indices[index_count] = normalIndex[1];
-            index_count++;
-
-            // Third face
-            vertex_indices[index_count] = vertexIndex[2];
-            uv_indices[index_count]     = uvIndex[2];
-            normal_indices[index_count] = normalIndex[2];
-            index_count++;
+        if (matches == 9) {
+            // Your existing index_count check and storage logic here...
+            // ...
+        } else {
+            // Optional: Handle f v//n or f v/t formats if sscanf fails
+            printf("Warning: Unsupported face format or non-triangulated mesh!\n");
         }
-
     }
+}
 
     // Allocate final arrays
     returnObject->numVertices = index_count;
@@ -125,5 +119,12 @@ int loadObj(const char* path,LoadedObject* returnObject){
     free(normal_indices);
     fclose(file);
 
-    return 0;
+    return 1;
+}
+
+// Frees the final arrays in the LoadedObject
+void freeObj(LoadedObject* obj){
+    free(obj->vertices);
+    free(obj->uvs);
+    free(obj->normals);
 }
