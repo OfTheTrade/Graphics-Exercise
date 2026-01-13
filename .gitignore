@@ -14,7 +14,7 @@
 !program/*.c
 !include/*.h
 !source/*.c
-shaders/*.glsl
+!shaders/*.glsl
 !glad/*.h
 !glad/*.c
 !.gitignore

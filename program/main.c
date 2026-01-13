@@ -169,10 +169,23 @@ int main(){
     GLint projLoc  = glGetUniformLocation(shaderProgram, "projection");
     // Texures
     GLint planetLoc  = glGetUniformLocation(shaderProgram, "planet");
+    glUniform1i(planetLoc, 0); 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, planetTexture);
+    
     GLint cubeLoc  = glGetUniformLocation(shaderProgram, "cube");
+    glUniform1i(cubeLoc, 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, cubeTexture);
     // Lighting
     GLint lightLoc = glGetUniformLocation(shaderProgram, "lightPos");
     GLint isPlanetLoc = glGetUniformLocation(shaderProgram, "isPlanet");
+    
+    // Projection Matrix (Remains Constant)
+    mat4 projection;
+    glm_perspective(glm_rad(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f, projection);
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, (float*)projection);
+
     // --------- Main render loop ---------
 
     double lastFrame = 0.0f;
@@ -193,12 +206,6 @@ int main(){
         // Clear the screen
         glClearColor(0.05f, 0.05f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // --------- Transformation Matrices ---------
-
-        // Projection Matrix
-        mat4 projection;
-        glm_perspective(glm_rad(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f, projection);
         
         // View matrix
         updateCameraMatrix(&camera);
@@ -212,50 +219,47 @@ int main(){
         glm_translate(model, planetPos);
         
         // Upload to shader
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, (float*)projection);
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, (float*)camera.viewMatrix);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float*)model);
 
-        glUniform3fv(lightLoc, 1, planetPos);
-        glUniform1i(isPlanetLoc, 1);    
+        // Planets location is a light source
+        glUniform3fv(lightLoc, 1, planetPos); 
 
         // --------- Render the planet ---------
 
         // Used by the shader to make the planet bright
         glUniform1i(isPlanetLoc, 1);
-
-        // Set texture for planet
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, planetTexture);
-        glUniform1i(planetLoc, 0);
-
         // Bind VAO for planet       
         glBindVertexArray(planetVAO);
-
         // Render planet
         glDrawArrays(GL_TRIANGLES, 0, planet.numVertices);
 
         // --------- Render the cubes ---------
-        glBindVertexArray(cubeVAO);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        
+        // Shader should add lighting
         glUniform1i(isPlanetLoc, 0);
+        // Bind VAO for cube
+        glBindVertexArray(cubeVAO);
         
         // Calculate the model matrix for each cube and draw it
         for(int i = 0; i < 6; i++) {
-            mat4 cubeModelMat;
-            glm_mat4_identity(cubeModelMat);
+            mat4 cubeModel;
             
-            // Orbit calculation: angle depends on index i to space them out
+            // Start with the planet's transformation 
+            glm_mat4_copy(model, cubeModel); 
+            
+            // Calculate the local orbit (assuming the planet is (0,0,0)
             float orbitAngle = activeTime + (i * (6.28f / 6.0f));
-            float cx = planetX + sin(orbitAngle) * 4.0f;
-            float cz = planetZ + cos(orbitAngle) * 4.0f;
+            vec3 localPos = { sin(orbitAngle) * 4.0f, 0.0f, cos(orbitAngle) * 4.0f };
             
-            glm_translate(cubeModelMat, (vec3){cx, 0.0f, cz});
+            // Apply
+            glm_translate(cubeModel, localPos);
             
-            // Different cubes at different points in the orbit
-            glm_rotate(cubeModelMat, activeTime * (1.0f + i * 0.5f), (vec3){0.5f, 1.0f, 0.0f});
+            // Apply self rotation
+            glm_rotate(cubeModel, activeTime * (1.0f + i * 0.5f), (vec3){0.5f, 1.0f, 0.0f});
             
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, (float*)cubeModelMat);
+            // Upload and draw
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, (float*)cubeModel);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
