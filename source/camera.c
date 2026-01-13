@@ -5,16 +5,16 @@
 const float ROTATION_SPEED = 2.0f;
 const float MIN_RADIUS = 5.0f;
 const float MAX_RADIUS = 50.0f;
+vec3 STATIC_POS = {0.0f, 0.0f, -20.0f};
 
 // Initializes the camera with default values
 void initCamera(Camera* camera){
-    camera->angleX = 0.0f;
-    camera->angleY = 0.0f;
-    camera->radius = 20.0f;
+    camera->angleX = -1.57f; 
+    camera->angleY = 0.2f;   
+    camera->radius = 40.0f;
+    updateCameraMatrix(camera);
     // Initialize view matrix to identity
     glm_mat4_identity(camera->viewMatrix);
-    // Update the view matrix based on initial values
-    updateCameraMatrix(camera);
 }
 
 // Processes input to update camera parameters
@@ -44,26 +44,27 @@ void processCameraInput(Camera* camera, GLFWwindow* window, float time){
     }
 
     // Don't allow the camera to flip upside down
-    if (camera->angleY < 0.1f) camera->angleY = 0.1f;
-    if (camera->angleY > 3.0f) camera->angleY = 3.0f;
+    if (camera->angleY < -2.0f) camera->angleY = -2.0f;
+    if (camera->angleY > 2.0f) camera->angleY = 2.0f;
 }
 
 // Updates the camera's view matrix based on its values
 void updateCameraMatrix(Camera* camera){
+    // Calculate direction 
+    vec3 front;
+    front[0] = cosf(camera->angleY) * cosf(camera->angleX);
+    front[1] = sinf(camera->angleY);
+    front[2] = cosf(camera->angleY) * sinf(camera->angleX);
+    glm_normalize(front);
 
-    // Position (Camera)
-    // From spherical coordinates to Cartesian coordinates
-    vec3 cameraPos;
-    cameraPos[0] = camera->radius * sinf(camera->angleY) * cosf(camera->angleX);
-    cameraPos[2] = camera->radius * sinf(camera->angleY) * sinf(camera->angleX);
-    cameraPos[1] = camera->radius * cosf(camera->angleY);
+    // Calculate POS depending on radius to use
+    vec3 cameraPos = {0.0f, 0.0f, camera->radius};
 
-    // Target (Planet)
-    vec3 target = {0.0f, 0.0f, 0.0f};
+    // Calculate target
+    vec3 target;
+    glm_vec3_add(cameraPos, front, target); 
 
-    // Up vector
+    // Define up
     vec3 up = {0.0f, 1.0f, 0.0f};
-
-    // Create view matrix
     glm_lookat(cameraPos, target, up, camera->viewMatrix);
 }

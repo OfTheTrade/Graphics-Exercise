@@ -1,14 +1,13 @@
 #ifndef OBJ_LOADER_H
 #define OBJ_LOADER_H
 
+#include "../include/vertex.h"
 #include "../glad/glad.h"
 
 // Holds loaded object data
-typedef struct{
-    float* vertices;
-    float* uvs;
-    float* normals;
-    unsigned int numVertices;
+typedef struct {
+    Vertex* vertices; 
+    int numVertices;
 } LoadedObject;
 
 // Loads an OBJ file from the given path into the provided LoadedObject structure

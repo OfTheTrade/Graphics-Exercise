@@ -4,8 +4,9 @@
 // A vertex structure 
 typedef struct {
     float x, y, z; // Position
-    float nx, ny, nz; // Normal 
     float u, v; // Texture coordinates
+    float nx, ny, nz; // Normal 
+
 } Vertex;
 
 #endif
