@@ -3,15 +3,13 @@
 #include <stdio.h>
 
 const float ROTATION_SPEED = 2.0f;
-const float MIN_RADIUS = 5.0f;
-const float MAX_RADIUS = 50.0f;
-vec3 STATIC_POS = {0.0f, 0.0f, -20.0f};
+float STATIC_POS = 30.0f;
+float STATIC_POS_Y = 5.0f;
 
 // Initializes the camera with default values
 void initCamera(Camera* camera){
     camera->angleX = -1.57f; 
-    camera->angleY = 0.2f;   
-    camera->radius = 40.0f;
+    camera->angleY = -0.3f;   
     updateCameraMatrix(camera);
     // Initialize view matrix to identity
     glm_mat4_identity(camera->viewMatrix);
@@ -35,14 +33,6 @@ void processCameraInput(Camera* camera, GLFWwindow* window, float time){
         camera->angleY -= ROTATION_SPEED * time;
     }
 
-    // Zoom
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        if (camera->radius > MIN_RADIUS) camera->radius -= 10.0f * time;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        if (camera->radius < MAX_RADIUS) camera->radius += 10.0f * time;
-    }
-
     // Don't allow the camera to flip upside down
     if (camera->angleY < -2.0f) camera->angleY = -2.0f;
     if (camera->angleY > 2.0f) camera->angleY = 2.0f;
@@ -57,8 +47,8 @@ void updateCameraMatrix(Camera* camera){
     front[2] = cosf(camera->angleY) * sinf(camera->angleX);
     glm_normalize(front);
 
-    // Calculate POS depending on radius to use
-    vec3 cameraPos = {0.0f, 0.0f, camera->radius};
+    // Position never changes
+    vec3 cameraPos = {0.0f, STATIC_POS_Y, STATIC_POS};
 
     // Calculate target
     vec3 target;

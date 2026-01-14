@@ -4,12 +4,11 @@
 #include <cglm/cglm.h>
 #include <GLFW/glfw3.h>
 
+// This camera never moves, only changes angle
 typedef struct{
     // Angles
     float angleX;
     float angleY;
-    // Distance from the center
-    float radius;
     // View matrix
     mat4 viewMatrix;  
 } Camera;
