@@ -4,6 +4,7 @@
 #include "../include/camera.h"
 #include "../include/cube.h"
 #include "../include/vertex.h"
+#include "../include/mtl_loader.h"
 
 #include "../glad/glad.h"
 #include <GLFW/glfw3.h>
@@ -47,11 +48,7 @@ int main(){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    #ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    #endif
-
+    
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Somewhat Accurate Solar System", NULL, NULL);
     if (window == NULL)
     {
@@ -105,6 +102,10 @@ int main(){
         glfwTerminate();
         return 1;
     }
+
+    // --------- Load material data for planet ---------
+    MaterialData planetMat;
+    loadMtl("resources/planet/planet.mtl", &planetMat);
 
     // --------- Initialise VAO, VBO for planet ---------
 
@@ -163,24 +164,39 @@ int main(){
 
     // Shortcuts for shader interaction
     glUseProgram(shaderProgram);
+
     // Matrixes
     GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
     GLint viewLoc  = glGetUniformLocation(shaderProgram, "view");
     GLint projLoc  = glGetUniformLocation(shaderProgram, "projection");
-    // Texures
+
+    // Planet Texure
     GLint planetLoc  = glGetUniformLocation(shaderProgram, "planet");
     glUniform1i(planetLoc, 0); 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, planetTexture);
     
+    // Cube texture
     GLint cubeLoc  = glGetUniformLocation(shaderProgram, "cube");
     glUniform1i(cubeLoc, 1);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, cubeTexture);
+
     // Lighting
     GLint lightLoc = glGetUniformLocation(shaderProgram, "lightPos");
     GLint isPlanetLoc = glGetUniformLocation(shaderProgram, "isPlanet");
+    GLint viewPosLoc = glGetUniformLocation(shaderProgram, "viewPos");
+    // Position remains static
+    vec3 cameraStaticPos = {0.0f, 5.0f, 30.0f};
+    glUniform3fv(viewPosLoc, 1, cameraStaticPos);
+
+    // Material
+    GLint matAmbLoc  = glGetUniformLocation(shaderProgram, "material.ambient");
+    GLint matDiffLoc = glGetUniformLocation(shaderProgram, "material.diffuse");
+    GLint matSpecLoc = glGetUniformLocation(shaderProgram, "material.specular");
+    GLint matShinLoc = glGetUniformLocation(shaderProgram, "material.shininess");
     
+
     // Projection Matrix (Remains Constant)
     mat4 projection;
     glm_perspective(glm_rad(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f, projection);
@@ -226,6 +242,13 @@ int main(){
         glUniform3fv(lightLoc, 1, planetPos); 
 
         // --------- Render the planet ---------
+
+        // When drawing the cubes (or anything using the material)
+        glUniform3fv(matAmbLoc, 1, planetMat.Ka);
+        glUniform3fv(matDiffLoc, 1, planetMat.Kd);
+        glUniform3fv(matSpecLoc, 1, planetMat.Ks);
+        glUniform1f(matShinLoc, planetMat.Ns);
+
 
         // Used by the shader to make the planet bright
         glUniform1i(isPlanetLoc, 1);

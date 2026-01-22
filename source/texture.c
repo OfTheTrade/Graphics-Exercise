@@ -10,7 +10,7 @@
 // Loads a texture from the given file path
 // Returns the texture ID on success, 0 on failure
 GLuint loadTexture(const char* path){
-    printf("Loading texture: (%s)\n", path);
+    printf("Loading Texture: (%s)\n", path);
 
     // Generate texture ID and load texture data
     GLuint textureID;

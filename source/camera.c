@@ -3,8 +3,9 @@
 #include <stdio.h>
 
 const float ROTATION_SPEED = 2.0f;
-float STATIC_POS = 30.0f;
+float STATIC_POS_Z = 30.0f;
 float STATIC_POS_Y = 5.0f;
+float STATIC_POS_X = 0.0f;
 
 // Initializes the camera with default values
 void initCamera(Camera* camera){
@@ -48,7 +49,7 @@ void updateCameraMatrix(Camera* camera){
     glm_normalize(front);
 
     // Position never changes
-    vec3 cameraPos = {0.0f, STATIC_POS_Y, STATIC_POS};
+    vec3 cameraPos = {STATIC_POS_X, STATIC_POS_Y, STATIC_POS_Z};
 
     // Calculate target
     vec3 target;
