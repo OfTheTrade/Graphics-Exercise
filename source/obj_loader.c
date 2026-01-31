@@ -15,6 +15,7 @@ void capacityCheck(float** array, int* capacity,int count){
 // 0 on failure, 1 on success
 int loadObj(const char* path,LoadedObject* returnObject){
     printf("Loading OBJ file: (%s)\n", path);
+
     // Open the file
     FILE* file = fopen(path, "r");
     if (file == NULL) {
@@ -27,11 +28,14 @@ int loadObj(const char* path,LoadedObject* returnObject){
     int vertex_count = 0, uv_count = 0, normal_count = 0, index_count = 0;
     
     // Allocate temporary object data arrays
+    // These will contain every vertex, uv, normal in the obj file plainly
     float* temp_vertices = (float*)malloc(max_vertices * sizeof(float));
     float* temp_uvs = (float*)malloc(max_uvs * sizeof(float));
     float* temp_normals = (float*)malloc(max_normals * sizeof(float));
-    // Used to index with face lines in the OBJ file
-    // Three arrays running in parallel. Each of their indeces correspond to a face.
+
+    // Stores the indices given by face lines
+    // Three arrays running in parallel in sets of three.
+    // Each of these sets corresponds to a face.
     unsigned int* vertex_indices = (unsigned int*)malloc(max_indices * sizeof(unsigned int));
     unsigned int* uv_indices = (unsigned int*)malloc(max_indices * sizeof(unsigned int));
     unsigned int* normal_indices = (unsigned int*)malloc(max_indices * sizeof(unsigned int));
@@ -39,6 +43,7 @@ int loadObj(const char* path,LoadedObject* returnObject){
     char line_buffer[128];
     // Read the file line by line
     while (fgets(line_buffer, sizeof(line_buffer), file)) {
+
         // Vertex
         if (strncmp(line_buffer, "v ", 2) == 0) {
             capacityCheck(&temp_vertices, &max_vertices, vertex_count + 3);
@@ -58,7 +63,6 @@ int loadObj(const char* path,LoadedObject* returnObject){
             normal_count += 3;
         }
         // Face
-        // Used to index rest of data
         else if (strncmp(line_buffer, "f ", 2) == 0) {
             unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
             int matches = sscanf(line_buffer, "f %u/%u/%u %u/%u/%u %u/%u/%u", 
@@ -74,6 +78,8 @@ int loadObj(const char* path,LoadedObject* returnObject){
                     normal_indices = (unsigned int*)realloc(normal_indices, max_indices * sizeof(unsigned int));
                 }
 
+                // Store the indices
+                // Will be used to correctly package the data later
                 for(int i = 0; i < 3; i++) {
                     vertex_indices[index_count] = vertexIndex[i];
                     uv_indices[index_count]     = uvIndex[i];
@@ -84,11 +90,12 @@ int loadObj(const char* path,LoadedObject* returnObject){
         }
     }
 
-    // Allocate a the return structs
+    // Allocate the return structs
     returnObject->numVertices = index_count;
     returnObject->vertices = (Vertex*)malloc(index_count * sizeof(Vertex));
 
-    // Fill the interleaved array
+    // Fill struct with the faces read 
+    // Each face is basically three consequative slots in the three '_indices' arrays. 
     for (int i = 0; i < index_count; i++) {
         unsigned int v_idx = vertex_indices[i] - 1;
         unsigned int uv_idx = uv_indices[i] - 1;
