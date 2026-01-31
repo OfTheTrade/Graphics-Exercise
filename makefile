@@ -42,3 +42,6 @@ $(OBJ_DIR)/%.o: $(GLAD_DIR)/%.c
 
 run: all
 	./$(TARGET)
+
+clean: 
+	rm -rf $(TARGET)
