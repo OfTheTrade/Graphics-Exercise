@@ -1,7 +1,7 @@
 # Basic variables
 CC = gcc
 CFLAGS = -I ./include -I. -Wall
-LIBS = -lglfw -lGL -lm -ldl
+LIBS = -lglfw -lGL -lcglm -lm -ldl
 
 # Directories
 SRC_DIR = source
@@ -39,9 +39,6 @@ $(OBJ_DIR)/%.o: $(PROG_DIR)/%.c
 $(OBJ_DIR)/%.o: $(GLAD_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-
-clean:
-	rm -rf $(EXE_DIR)
 
 run: all
 	./$(TARGET)

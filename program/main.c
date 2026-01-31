@@ -162,7 +162,7 @@ int main(){
     Camera camera;
     initCamera(&camera);
 
-    // Shortcuts for shader interaction
+    // --------- Shortcuts for shader interaction ---------
     glUseProgram(shaderProgram);
 
     // Matrixes
@@ -195,6 +195,11 @@ int main(){
     GLint matDiffLoc = glGetUniformLocation(shaderProgram, "material.diffuse");
     GLint matSpecLoc = glGetUniformLocation(shaderProgram, "material.specular");
     GLint matShinLoc = glGetUniformLocation(shaderProgram, "material.shininess");
+
+    glUniform3fv(matAmbLoc, 1, planetMat.Ka);
+    glUniform3fv(matDiffLoc, 1, planetMat.Kd);
+    glUniform3fv(matSpecLoc, 1, planetMat.Ks);
+    glUniform1f(matShinLoc, planetMat.Ns);
     
 
     // Projection Matrix (Remains Constant)
@@ -242,13 +247,6 @@ int main(){
         glUniform3fv(lightLoc, 1, planetPos); 
 
         // --------- Render the planet ---------
-
-        // When drawing the cubes (or anything using the material)
-        glUniform3fv(matAmbLoc, 1, planetMat.Ka);
-        glUniform3fv(matDiffLoc, 1, planetMat.Kd);
-        glUniform3fv(matSpecLoc, 1, planetMat.Ks);
-        glUniform1f(matShinLoc, planetMat.Ns);
-
 
         // Used by the shader to make the planet bright
         glUniform1i(isPlanetLoc, 1);
