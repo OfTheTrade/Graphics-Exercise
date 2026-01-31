@@ -17,7 +17,7 @@ SRCS = $(PROG_DIR)/main.c $(GLAD_DIR)/glad.c $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 
 # Target folder
-TARGET = $(EXE_DIR)/main
+TARGET = $(EXE_DIR)/planets
 
 # Default rule
 all: $(TARGET)
